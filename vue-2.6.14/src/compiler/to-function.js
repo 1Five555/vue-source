@@ -8,6 +8,7 @@ type CompiledFunctionResult = {
   render: Function;
   staticRenderFns: Array<Function>;
 };
+// 通过new Function的方式将字符串代码创建出真实函数
 
 function createFunction (code, errors) {
   try {
@@ -19,6 +20,7 @@ function createFunction (code, errors) {
 }
 
 export function createCompileToFunctionFn (compile: Function): Function {
+    //创建一个不带原型的对象，目的是通过闭包缓存编译之后的结果
   const cache = Object.create(null)
 
   return function compileToFunctions (
@@ -26,6 +28,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
     options?: CompilerOptions,
     vm?: Component
   ): CompiledFunctionResult {
+     //防止污染，克隆一份
     options = extend({}, options)
     const warn = options.warn || baseWarn
     delete options.warn
@@ -49,6 +52,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
     }
 
     // check cache
+//1.读取缓存中的 CompiledFunctionResult,如果有则直接返回，就不需要重新编译了，空间换时间
     const key = options.delimiters
       ? String(options.delimiters) + template
       : template
@@ -57,9 +61,11 @@ export function createCompileToFunctionFn (compile: Function): Function {
     }
 
     // compile
+    //2.把模板编译为编译对象(render,staticRenderFns),字符串形式的JS代码
     const compiled = compile(template, options)
 
     // check compilation errors/tips
+    // 收集模板编译过程中的错误打印出来
     if (process.env.NODE_ENV !== 'production') {
       if (compiled.errors && compiled.errors.length) {
         if (options.outputSourceRange) {
@@ -90,6 +96,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
     // turn code into functions
     const res = {}
     const fnGenErrors = []
+    //3.把字符串形式的JS代码转换成JS方法
     res.render = createFunction(compiled.render, fnGenErrors)
     res.staticRenderFns = compiled.staticRenderFns.map(code => {
       return createFunction(code, fnGenErrors)
@@ -108,7 +115,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
         )
       }
     }
-
+    // 缓存并返回res对象(render,staticRenderFns方法)
     return (cache[key] = res)
   }
 }
