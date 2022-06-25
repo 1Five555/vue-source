@@ -6,10 +6,13 @@ import { createCompileToFunctionFn } from './to-function'
 
 export function createCompilerCreator (baseCompile: Function): Function {
   return function createCompiler (baseOptions: CompilerOptions) {
+    // compile接收两个参数，一个是template，一个是用户传的options
     function compile (
       template: string,
       options?: CompilerOptions
     ): CompiledResult {
+      // 创建一个finalOptions，原型指向baseOptions(平台相关的options)
+      // 作用是合并compile传过来的options和baseOptions
       const finalOptions = Object.create(baseOptions)
       const errors = []
       const tips = []
@@ -57,7 +60,7 @@ export function createCompilerCreator (baseCompile: Function): Function {
       }
 
       finalOptions.warn = warn
-
+      // 模板编译核心函数baseCompile
       const compiled = baseCompile(template.trim(), finalOptions)
       if (process.env.NODE_ENV !== 'production') {
         detectErrors(compiled.ast, warn)
