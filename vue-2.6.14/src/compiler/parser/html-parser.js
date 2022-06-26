@@ -58,6 +58,7 @@ export function parseHTML (html, options) {
   const canBeLeftOpenTag = options.canBeLeftOpenTag || no
   let index = 0
   let last, lastTag
+  // 遍历模板字符串，处理完的文本截取掉然后继续处理剩余的部分
   while (html) {
     last = html
     // Make sure we're not in a plaintext content element like script/style
@@ -180,7 +181,9 @@ export function parseHTML (html, options) {
   parseEndTag()
 
   function advance (n) {
+    // 记录当前最新位置
     index += n
+    // 从处理完的位置截取剩余内容
     html = html.substring(n)
   }
 
