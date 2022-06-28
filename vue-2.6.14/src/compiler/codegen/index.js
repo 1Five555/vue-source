@@ -30,7 +30,9 @@ export class CodegenState {
     const isReservedTag = options.isReservedTag || no
     this.maybeComponent = (el: ASTElement) => !!el.component || !isReservedTag(el.tag)
     this.onceId = 0
+    //存储静态根节点存储的代码
     this.staticRenderFns = []
+    // 记录当前节点是否是被v-pre标记的
     this.pre = false
   }
 }
@@ -44,6 +46,7 @@ export function generate (
   ast: ASTElement | void,
   options: CompilerOptions
 ): CodegenResult {
+  // 代码生成过程中使用到的状态对象
   const state = new CodegenState(options)
   // fix #11483, Root level <script> tags should not be rendered.
   const code = ast ? (ast.tag === 'script' ? 'null' : genElement(ast, state)) : '_c("div")'
@@ -52,12 +55,12 @@ export function generate (
     staticRenderFns: state.staticRenderFns
   }
 }
-
+// 最终把ast对象转换成代码
 export function genElement (el: ASTElement, state: CodegenState): string {
   if (el.parent) {
     el.pre = el.pre || el.parent.pre
   }
-
+  // 这里返回的都是字符串形式的代码
   if (el.staticRoot && !el.staticProcessed) {
     return genStatic(el, state)
   } else if (el.once && !el.onceProcessed) {
@@ -78,6 +81,8 @@ export function genElement (el: ASTElement, state: CodegenState): string {
     } else {
       let data
       if (!el.plain || (el.pre && state.maybeComponent(el))) {
+        // 生成元素的属性、指令、事件等
+        // 处理各种指令，包括genDirectives
         data = genData(el, state)
       }
 
