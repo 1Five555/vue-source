@@ -74,7 +74,7 @@ export function genElement (el: ASTElement, state: CodegenState): string {
   } else if (el.tag === 'slot') {
     return genSlot(el, state)
   } else {
-    // component or element
+    // component or element.
     let code
     if (el.component) {
       code = genComponent(el.component, el, state)
