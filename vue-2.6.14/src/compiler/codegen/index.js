@@ -61,6 +61,7 @@ export function genElement (el: ASTElement, state: CodegenState): string {
     el.pre = el.pre || el.parent.pre
   }
   // 这里返回的都是字符串形式的代码
+  // 这代码谁写的？？？全是else if
   if (el.staticRoot && !el.staticProcessed) {
     return genStatic(el, state)
   } else if (el.once && !el.onceProcessed) {
