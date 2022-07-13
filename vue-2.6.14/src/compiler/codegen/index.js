@@ -51,7 +51,9 @@ export function generate (
   // fix #11483, Root level <script> tags should not be rendered.
   const code = ast ? (ast.tag === 'script' ? 'null' : genElement(ast, state)) : '_c("div")'
   return {
+    // 对应的AST对象生成的VNode代码的字符串形式
     render: `with(this){return ${code}}`,
+    // 目前还是空数组，将来存储的是 生成的静态渲染函数（也就是静态根节点对应的渲染函数）
     staticRenderFns: state.staticRenderFns
   }
 }
@@ -62,6 +64,7 @@ export function genElement (el: ASTElement, state: CodegenState): string {
   }
   // 这里返回的都是字符串形式的代码
   // 这代码谁写的？？？全是else if
+  // 如果是静态根节点并且没有被处理过的话就调用genStatic
   if (el.staticRoot && !el.staticProcessed) {
     return genStatic(el, state)
   } else if (el.once && !el.onceProcessed) {
@@ -104,6 +107,7 @@ export function genElement (el: ASTElement, state: CodegenState): string {
 
 // hoist static sub-trees out
 function genStatic (el: ASTElement, state: CodegenState): string {
+  // 做标记，表示当前节点已经被处理过了
   el.staticProcessed = true
   // Some elements (templates) need to behave differently inside of a v-pre
   // node.  All pre nodes are static roots, so we can use this as a location to
@@ -112,8 +116,10 @@ function genStatic (el: ASTElement, state: CodegenState): string {
   if (el.pre) {
     state.pre = el.pre
   }
+  // 添加元素的位置
   state.staticRenderFns.push(`with(this){return ${genElement(el, state)}}`)
   state.pre = originalPreState
+  //  把刚刚生成的代码传递进来
   return `_m(${
     state.staticRenderFns.length - 1
   }${
